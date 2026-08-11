@@ -83,6 +83,8 @@ WorkingDirectory=/root/Atlas
 ExecStart=/usr/bin/npm run dev
 Restart=always
 RestartSec=5
+# 用自定义域名访问时配置（多个用逗号分隔），否则 Vite 会拦截域名
+# Environment=ALLOWED_HOSTS=atlas.54shen.cn
 
 [Install]
 WantedBy=multi-user.target
@@ -142,17 +144,18 @@ ufw allow 5745
 
 **Q3：用域名访问报 `Blocked request. This host ("xxx") is not allowed.`**
 
-Vite 的域名白名单防护，把域名加进 `vite.config.ts` 的 `server.allowedHosts`：
+Vite 的域名白名单防护。本项目通过环境变量 `ALLOWED_HOSTS` 配置（不写死在代码里），多个域名用逗号分隔：
 
-```ts
-server: {
-  host: true,
-  port: 5745,
-  allowedHosts: ['atlas.54shen.cn'], // 换成你的域名；有多个域名就都列上
-}
+```bash
+# 方式一：systemd 服务里加环境变量（推荐）
+# 在 Atlas.service 的 [Service] 段加入：
+Environment=ALLOWED_HOSTS=atlas.54shen.cn
+
+# 方式二：手动启动时
+ALLOWED_HOSTS=atlas.54shen.cn npm run dev
 ```
 
-改完 `systemctl restart Atlas` 生效。
+改完 `systemctl daemon-reload && systemctl restart Atlas` 生效。
 
 ## 📚 文档
 

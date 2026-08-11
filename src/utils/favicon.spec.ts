@@ -1,5 +1,18 @@
 import { describe, expect, it } from 'vitest'
-import { fallbackLetter, resolveIcon } from './favicon'
+import { fallbackLetter, isEmojiIcon, resolveIcon } from './favicon'
+
+describe('isEmojiIcon', () => {
+  it('URL 不是 emoji', () => {
+    expect(isEmojiIcon('https://x.com/i.png')).toBe(false)
+    expect(isEmojiIcon('data:image/png;base64,xxx')).toBe(false)
+    expect(isEmojiIcon('/local/path.png')).toBe(false)
+  })
+
+  it('emoji 与文字按 emoji 处理', () => {
+    expect(isEmojiIcon('🛠️')).toBe(true)
+    expect(isEmojiIcon('Atlas')).toBe(true)
+  })
+})
 
 describe('resolveIcon', () => {
   it('自定义图标直接返回', () => {

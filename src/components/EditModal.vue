@@ -81,8 +81,8 @@ function cancel() {
             <input v-model="form.desc" placeholder="可选，展示在卡片上" />
           </label>
           <label class="field">
-            <span>图标</span>
-            <input v-model="form.icon" placeholder="可选：图片地址或 emoji" />
+            <span>图标（留空自动抓取站点图标）</span>
+            <input v-model="form.icon" placeholder="图片地址或 emoji，如 🛠️ / https://xxx/icon.png" />
           </label>
           <div class="modal-actions">
             <button type="button" class="btn" @click="cancel">取消</button>

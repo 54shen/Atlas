@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 import type { NavLink } from '@/types'
-import { fallbackLetter, resolveIcon } from '@/utils/favicon'
+import { fallbackLetter, isEmojiIcon, resolveIcon } from '@/utils/favicon'
 
 const props = defineProps<{
   link: NavLink
@@ -14,9 +14,21 @@ const emit = defineEmits<{
 }>()
 
 const iconFailed = ref(false)
-const iconUrl = computed(() =>
-  iconFailed.value ? '' : resolveIcon(props.link.icon, props.link.url),
-)
+
+/** 图标图片地址：自定义 URL 优先；noIcon 或 emoji 时不请求图片；缺省自动 /favicon.ico */
+const iconUrl = computed(() => {
+  if (iconFailed.value) return ''
+  const ic = props.link.icon
+  if (ic) return isEmojiIcon(ic) ? '' : ic
+  if (props.link.noIcon) return ''
+  return resolveIcon(undefined, props.link.url)
+})
+
+/** emoji/文字图标（有自定义 icon 且不是图片 URL 时渲染） */
+const iconEmoji = computed(() => {
+  const ic = props.link.icon
+  return ic && isEmojiIcon(ic) ? ic : ''
+})
 
 /** 操作按钮：阻止跳转与事件冒泡 */
 function onAction(e: MouseEvent, fn: () => void) {
@@ -44,6 +56,7 @@ function onAction(e: MouseEvent, fn: () => void) {
           draggable="false"
           @error="iconFailed = true"
         />
+        <span v-else-if="iconEmoji" class="card-icon-emoji">{{ iconEmoji }}</span>
         <span v-else class="card-icon-fallback">{{ fallbackLetter(link.name) }}</span>
       </span>
       <span class="card-body">
@@ -138,6 +151,11 @@ function onAction(e: MouseEvent, fn: () => void) {
   font-size: 16px;
   font-weight: 600;
   color: var(--accent);
+}
+
+.card-icon-emoji {
+  font-size: 20px;
+  line-height: 1;
 }
 
 .card-body {

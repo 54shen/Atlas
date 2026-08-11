@@ -11,8 +11,8 @@ const link: NavLink = {
   order: 1,
 }
 
-function mountCard(isEditing = false) {
-  return mount(NavCard, { props: { link, isEditing } })
+function mountCard(isEditing = false, linkOverride: Partial<NavLink> = {}) {
+  return mount(NavCard, { props: { link: { ...link, ...linkOverride }, isEditing } })
 }
 
 describe('NavCard', () => {
@@ -49,5 +49,29 @@ describe('NavCard', () => {
     await wrapper.findAll('.mini-btn')[1].trigger('click')
     expect(wrapper.find('.nav-card').attributes('href')).toBe('https://github.com')
     expect(wrapper.emitted('delete')).toBeTruthy()
+  })
+
+  it('自定义图片图标：img 使用 icon 字段', () => {
+    const wrapper = mountCard(false, { icon: 'https://cdn.example.com/icon.png' })
+    const img = wrapper.find('.card-icon img')
+    expect(img.exists()).toBe(true)
+    expect(img.attributes('src')).toBe('https://cdn.example.com/icon.png')
+  })
+
+  it('emoji 图标：渲染为文字且不发起图片请求', () => {
+    const wrapper = mountCard(false, { icon: '🛠️' })
+    expect(wrapper.find('.card-icon img').exists()).toBe(false)
+    expect(wrapper.find('.card-icon-emoji').text()).toBe('🛠️')
+  })
+
+  it('noIcon 站点：跳过图标请求，直接显示首字母', () => {
+    const wrapper = mountCard(false, { noIcon: true })
+    expect(wrapper.find('.card-icon img').exists()).toBe(false)
+    expect(wrapper.find('.card-icon-fallback').text()).toBe('G')
+  })
+
+  it('noIcon 但配置了自定义图标时仍使用自定义图标', () => {
+    const wrapper = mountCard(false, { noIcon: true, icon: 'https://cdn.example.com/i.png' })
+    expect(wrapper.find('.card-icon img').attributes('src')).toBe('https://cdn.example.com/i.png')
   })
 })

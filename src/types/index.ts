@@ -20,8 +20,13 @@ export interface NavLink {
   name: string
   url: string
   desc?: string
-  /** 自定义图标地址；缺省时自动使用站点 /favicon.ico */
+  /**
+   * 自定义图标：图片地址（http/data: 开头）或 emoji/文字；
+   * 设置了就以它为准，缺省时自动使用站点 /favicon.ico
+   */
   icon?: string
+  /** true 时完全跳过图标请求（如站点有 Basic 鉴权会弹登录框），直接显示首字母 */
+  noIcon?: boolean
   order: number
 }
 
