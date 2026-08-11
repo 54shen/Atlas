@@ -11,6 +11,7 @@ export default defineConfig({
     },
   },
   server: {
+    host: true, // 绑定 0.0.0.0：部署后局域网/公网可访问（仅 localhost 则外网连不上）
     port: 5745,
   },
   test: {

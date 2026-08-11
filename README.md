@@ -67,6 +67,8 @@ npm install                               # 国内可加 --registry=https://regi
 cp public/data/links.example.json public/data/links.json   # 先用示例模板跑通，再替换为你的真实数据
 ```
 
+> **环境要求**：Node.js ≥ 20.19（或 22.12+）。服务器版本太老会启动失败（报 `crypto.hash is not a function`），升级方法见下方「常见问题」。
+
 ### 2. 创建 systemd 服务
 
 ```bash
@@ -109,6 +111,34 @@ cd ~/Atlas && git pull && npm install && systemctl restart Atlas
 # 看日志
 journalctl -u Atlas -f
 ```
+
+### 5. 常见问题（FAQ）
+
+**Q1：启动报错 `crypto.hash is not a function` / `Vite requires Node.js version 20.19+`**
+
+服务器 Node 版本太老（Ubuntu/Debian 官方源默认只有 18.x）。升级到 Node 22：
+
+```bash
+curl -fsSL https://deb.nodesource.com/setup_22.x | bash -   # 添加 NodeSource 源
+apt install -y nodejs                                        # 重新安装（替换旧版本）
+node -v                                                      # 应显示 v22.x.x
+systemctl restart Atlas
+```
+
+**Q2：外网访问不到（只有 localhost 能打开）**
+
+项目已配置 `server.host: true`（Vite 绑定 0.0.0.0），部署后直接访问 `http://服务器IP:5745`。仍无法访问时依次检查：
+
+1. 防火墙放行 5745 端口：
+
+```bash
+# firewalld
+firewall-cmd --permanent --add-port=5745/tcp && firewall-cmd --reload
+# ufw
+ufw allow 5745
+```
+
+2. 云服务器控制台的**安全组**放行 5745 端口（TCP）。
 
 ## 📚 文档
 
