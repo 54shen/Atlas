@@ -86,6 +86,8 @@ function toggleEdit() {
   align-items: center;
   gap: 10px;
   flex-shrink: 0;
+  /* 搜索框 absolute 脱离 flex 流后，用它把按钮组推到最右边 */
+  margin-left: auto;
 }
 
 @media (max-width: 640px) {
