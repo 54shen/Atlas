@@ -140,6 +140,20 @@ ufw allow 5745
 
 2. 云服务器控制台的**安全组**放行 5745 端口（TCP）。
 
+**Q3：用域名访问报 `Blocked request. This host ("xxx") is not allowed.`**
+
+Vite 的域名白名单防护，把域名加进 `vite.config.ts` 的 `server.allowedHosts`：
+
+```ts
+server: {
+  host: true,
+  port: 5745,
+  allowedHosts: ['atlas.54shen.cn'], // 换成你的域名；有多个域名就都列上
+}
+```
+
+改完 `systemctl restart Atlas` 生效。
+
 ## 📚 文档
 
 - [开发文档](docs/开发文档.md) — 需求分析、技术选型、架构设计、开发计划
