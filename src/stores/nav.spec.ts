@@ -151,13 +151,18 @@ describe('站点名与全局保存', () => {
     expect(loadLocalData<NavData>(NAV_DATA_KEY)!.settings.siteName).toBe('我的导航站')
   })
 
-  it('修改后防抖自动调用保存接口并置 saved 状态', async () => {
+  it('编辑过程中不自动保存，退出编辑模式时保存一次', async () => {
     vi.useFakeTimers()
     const fetchMock = vi.fn().mockResolvedValue({ ok: true, json: async () => ({ ok: true }) })
     vi.stubGlobal('fetch', fetchMock)
     const store = setup()
+    store.isEditing = true
     store.addGroup('临时')
-    await vi.advanceTimersByTimeAsync(900)
+    await vi.runAllTimersAsync()
+    expect(fetchMock).not.toHaveBeenCalled() // 编辑中不触发网络保存（避免卡顿）
+
+    store.isEditing = false // 退出编辑 → 自动保存
+    await vi.advanceTimersByTimeAsync(0) // 只冲微任务，避免触发保存成功的 3s 状态复位定时器
     expect(fetchMock).toHaveBeenCalledTimes(1)
     const [url, init] = fetchMock.mock.calls[0]
     expect(url).toBe('/api/data')
@@ -165,12 +170,14 @@ describe('站点名与全局保存', () => {
     expect(store.saveStatus).toBe('saved')
   })
 
-  it('保存失败时 saveStatus 为 error', async () => {
+  it('退出编辑保存失败时 saveStatus 为 error', async () => {
     vi.useFakeTimers()
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ ok: false }))
     const store = setup()
+    store.isEditing = true
     store.addGroup('临时')
-    await vi.advanceTimersByTimeAsync(900)
+    store.isEditing = false
+    await vi.runAllTimersAsync()
     expect(store.saveStatus).toBe('error')
   })
 

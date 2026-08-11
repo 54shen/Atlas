@@ -60,7 +60,7 @@ onUnmounted(() => {
   <div class="page">
     <TopBar />
     <div v-if="nav.isEditing" class="edit-banner">
-      ✏️ 编辑模式：改动会自动保存到服务器（全设备生效）
+      ✏️ 编辑模式：退出后自动保存到服务器（全设备生效）
       <span v-if="nav.saveStatus !== 'idle'" class="save-status" :class="nav.saveStatus">
         {{ nav.saveStatus === 'saving' ? '保存中…' : nav.saveStatus === 'saved' ? '✅ 已保存' : '⚠️ 保存失败（纯静态托管无保存接口）' }}
       </span>

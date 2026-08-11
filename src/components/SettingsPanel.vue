@@ -120,7 +120,7 @@ function onAddEngine() {
             </span>
           </div>
           <p class="panel-tip">
-            编辑模式的改动会自动保存到服务器（需 dev server 部署，见 README）；纯静态托管（Vercel 等）无保存接口，修改仅存浏览器本地。
+            编辑模式的改动在退出编辑模式时自动保存到服务器（需 dev server 部署，见 README）；也可点上方按钮手动保存。纯静态托管（Vercel 等）无保存接口，修改仅存浏览器本地。
           </p>
         </section>
 

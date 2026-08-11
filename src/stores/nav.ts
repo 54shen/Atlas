@@ -1,4 +1,4 @@
-import { computed, ref, toRaw } from 'vue'
+import { computed, ref, toRaw, watch } from 'vue'
 import { defineStore } from 'pinia'
 import type { NavData, NavGroup, NavLink, SearchEngine } from '@/types'
 import { mergeNavData, normalizeOrder } from '@/utils/merge'
@@ -20,7 +20,6 @@ export const useNavStore = defineStore('nav', () => {
   const isEditing = ref(false)
   /** 全局保存状态：idle 空闲 / saving 保存中 / saved 已保存 / error 失败（静态托管无接口） */
   const saveStatus = ref<'idle' | 'saving' | 'saved' | 'error'>('idle')
-  let saveTimer: ReturnType<typeof setTimeout> | undefined
 
   /** 合并后的最终数据（本地优先） */
   const data = computed<NavData | null>(() =>
@@ -69,17 +68,15 @@ export const useNavStore = defineStore('nav', () => {
     return structuredClone(toRaw(localData.value ?? baseData.value))
   }
 
-  /** 统一提交入口：规范化排序 → 更新本地快照 → 持久化 → 调度全局保存 */
+  /** 统一提交入口：规范化排序 → 更新本地快照 → 持久化（不在这里自动保存，避免编辑时卡顿） */
   function commit(next: NavData): void {
     normalizeOrder(next)
     localData.value = next
     saveLocalData(NAV_DATA_KEY, next)
-    scheduleServerSave()
   }
 
-  /** 立即把当前数据保存到服务器（全局生效）；静态托管环境会失败并置 error 状态 */
+  /** 把当前数据保存到服务器（全局生效）；静态托管环境会失败并置 error 状态 */
   async function saveNow(): Promise<void> {
-    if (saveTimer) clearTimeout(saveTimer)
     const current = data.value
     if (!current) return
     saveStatus.value = 'saving'
@@ -92,13 +89,14 @@ export const useNavStore = defineStore('nav', () => {
     }
   }
 
-  /** 编辑后防抖自动保存（800ms） */
-  function scheduleServerSave(): void {
-    if (saveTimer) clearTimeout(saveTimer)
-    saveTimer = setTimeout(() => {
-      void saveNow()
-    }, 800)
-  }
+  /** 退出编辑模式时自动保存一次（编辑过程中不触发网络保存，避免卡顿） */
+  watch(
+    isEditing,
+    (editing) => {
+      if (!editing) void saveNow()
+    },
+    { flush: 'sync' },
+  )
 
   /** 变更封装：深拷贝 → 执行变更 → 提交 */
   function mutate(fn: (d: NavData) => void): void {
