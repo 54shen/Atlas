@@ -22,11 +22,11 @@ function onGroupDragEnd() {
   nav.persistFromDrag()
 }
 
-/** 站点名变化时同步浏览器标签页标题 */
+/** 站点名变化时同步浏览器标签页标题（标题完全由站点名决定，可编辑） */
 watch(
   () => nav.siteName,
   (name) => {
-    document.title = `${name} · 我的导航`
+    document.title = name
   },
   { immediate: true },
 )

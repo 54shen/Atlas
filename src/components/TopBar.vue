@@ -21,7 +21,6 @@ function toggleEdit() {
       <span class="logo-icon">🧭</span>
       <span class="logo-text">{{ nav.siteName }}</span>
     </a>
-    <SearchBar class="topbar-search" />
     <div class="topbar-actions">
       <button
         class="icon-btn"
@@ -42,6 +41,7 @@ function toggleEdit() {
       </button>
       <ThemeSwitch />
     </div>
+    <SearchBar class="topbar-search" />
   </header>
 </template>
 
