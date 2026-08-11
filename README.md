@@ -54,13 +54,13 @@ npm test           # 运行单元测试
 
 ## 🐧 Linux 部署（systemd 开机自启）
 
-> 本项目为**纯前端静态应用**（无后端）。以 `/root/atlas` 为例（路径可换）。
+> 本项目为**纯前端静态应用**（无后端）。以 `/root/Atlas` 为例（路径可换）。
 
 ### 1. 克隆 + 安装依赖
 
 ```bash
 git clone https://github.com/54shen/Atlas.git
-cd ~/atlas
+cd ~/Atlas
 npm install                               # 国内可加 --registry=https://registry.npmmirror.com
 
 # 个人导航数据（links.json）不入库，克隆后需手动放入真实数据
@@ -70,14 +70,14 @@ cp public/data/links.example.json public/data/links.json   # 先用示例模板�
 ### 2. 创建 systemd 服务
 
 ```bash
-cat > /etc/systemd/system/atlas.service << 'EOF'
+cat > /etc/systemd/system/Atlas.service << 'EOF'
 [Unit]
 Description=Atlas Frontend
 After=network.target
 
 [Service]
 Type=simple
-WorkingDirectory=/root/atlas
+WorkingDirectory=/root/Atlas
 ExecStart=/usr/bin/npm run dev
 Restart=always
 RestartSec=5
@@ -95,31 +95,19 @@ EOF
 
 ```bash
 systemctl daemon-reload
-systemctl enable atlas
-systemctl start atlas
-systemctl status atlas        # 确认 running
+systemctl enable Atlas
+systemctl start Atlas
+systemctl status Atlas        # 确认 running
 ```
 
-### 4. 访问与验证
-
-- 访问：http://服务器IP:5745
-- 防火墙放行端口（二选一）：
-
-```bash
-# firewalld
-firewall-cmd --permanent --add-port=5745/tcp && firewall-cmd --reload
-# ufw
-ufw allow 5745
-```
-
-### 5. 更新与运维
+### 4. 更新与运维
 
 ```bash
 # 一键更新：拉代码 + 装依赖 + 重启（推荐）
-cd ~/atlas && git pull && npm install && systemctl restart atlas
+cd ~/Atlas && git pull && npm install && systemctl restart Atlas
 
 # 看日志
-journalctl -u atlas -f
+journalctl -u Atlas -f
 ```
 
 ## 📚 文档
