@@ -9,6 +9,10 @@ const nav = useNavStore()
 const newEngineName = ref('')
 const newEngineUrl = ref('')
 
+function onSiteNameChange(e: Event) {
+  nav.updateSiteName((e.target as HTMLInputElement).value)
+}
+
 // ---------- 数据管理 ----------
 
 function onExport() {
@@ -91,6 +95,28 @@ function onAddEngine() {
           <h3 class="modal-title">设置</h3>
           <button class="icon-btn" aria-label="关闭" @click="showSettings = false">✕</button>
         </div>
+
+        <section class="panel-section">
+          <h4>站点设置</h4>
+          <div class="panel-row">
+            <input
+              class="engine-input wide"
+              :value="nav.siteName"
+              aria-label="站点名称"
+              placeholder="站点名称（显示在左上角与浏览器标签）"
+              @change="onSiteNameChange"
+            />
+          </div>
+          <div class="panel-row">
+            <button class="btn primary" @click="nav.saveNow()">保存到服务器</button>
+            <span v-if="nav.saveStatus !== 'idle'" class="save-status" :class="nav.saveStatus">
+              {{ nav.saveStatus === 'saving' ? '保存中…' : nav.saveStatus === 'saved' ? '✅ 已保存' : '⚠️ 保存失败（纯静态托管无保存接口）' }}
+            </span>
+          </div>
+          <p class="panel-tip">
+            编辑模式的改动会自动保存到服务器（需 dev server 部署，见 README）；纯静态托管（Vercel 等）无保存接口，修改仅存浏览器本地。
+          </p>
+        </section>
 
         <section class="panel-section">
           <h4>数据管理</h4>

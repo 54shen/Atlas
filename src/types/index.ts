@@ -10,6 +10,8 @@ export interface SearchEngine {
 
 /** 站点设置：默认引擎 + 引擎列表 */
 export interface NavSettings {
+  /** 站点名称：显示在左上角 Logo 与浏览器标签页标题；缺省回退为 Atlas */
+  siteName?: string
   searchEngine: string
   searchEngines: SearchEngine[]
 }

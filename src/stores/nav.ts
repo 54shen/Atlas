@@ -4,6 +4,7 @@ import type { NavData, NavGroup, NavLink, SearchEngine } from '@/types'
 import { mergeNavData, normalizeOrder } from '@/utils/merge'
 import { clearLocalData, loadLocalData, saveLocalData } from '@/utils/storage'
 import { newId } from '@/utils/id'
+import { saveToServer } from '@/utils/api'
 
 /** localStorage 键名：导航数据快照 */
 export const NAV_DATA_KEY = 'nav:data:v1'
@@ -17,6 +18,9 @@ export const useNavStore = defineStore('nav', () => {
   const error = ref('')
   /** 编辑模式开关 */
   const isEditing = ref(false)
+  /** 全局保存状态：idle 空闲 / saving 保存中 / saved 已保存 / error 失败（静态托管无接口） */
+  const saveStatus = ref<'idle' | 'saving' | 'saved' | 'error'>('idle')
+  let saveTimer: ReturnType<typeof setTimeout> | undefined
 
   /** 合并后的最终数据（本地优先） */
   const data = computed<NavData | null>(() =>
@@ -37,6 +41,9 @@ export const useNavStore = defineStore('nav', () => {
   })
 
   const engines = computed<SearchEngine[]>(() => data.value?.settings.searchEngines ?? [])
+
+  /** 站点名称（设置里可改，缺省 Atlas） */
+  const siteName = computed(() => data.value?.settings.siteName?.trim() || 'Atlas')
 
   async function load(): Promise<void> {
     loading.value = true
@@ -62,11 +69,35 @@ export const useNavStore = defineStore('nav', () => {
     return structuredClone(toRaw(localData.value ?? baseData.value))
   }
 
-  /** 统一提交入口：规范化排序 → 更新本地快照 → 持久化 */
+  /** 统一提交入口：规范化排序 → 更新本地快照 → 持久化 → 调度全局保存 */
   function commit(next: NavData): void {
     normalizeOrder(next)
     localData.value = next
     saveLocalData(NAV_DATA_KEY, next)
+    scheduleServerSave()
+  }
+
+  /** 立即把当前数据保存到服务器（全局生效）；静态托管环境会失败并置 error 状态 */
+  async function saveNow(): Promise<void> {
+    if (saveTimer) clearTimeout(saveTimer)
+    const current = data.value
+    if (!current) return
+    saveStatus.value = 'saving'
+    const ok = await saveToServer(toRaw(current))
+    saveStatus.value = ok ? 'saved' : 'error'
+    if (ok) {
+      setTimeout(() => {
+        if (saveStatus.value === 'saved') saveStatus.value = 'idle'
+      }, 3000)
+    }
+  }
+
+  /** 编辑后防抖自动保存（800ms） */
+  function scheduleServerSave(): void {
+    if (saveTimer) clearTimeout(saveTimer)
+    saveTimer = setTimeout(() => {
+      void saveNow()
+    }, 800)
   }
 
   /** 变更封装：深拷贝 → 执行变更 → 提交 */
@@ -129,6 +160,12 @@ export const useNavStore = defineStore('nav', () => {
   function setSearchEngine(engineId: string): void {
     mutate((d) => {
       d.settings.searchEngine = engineId
+    })
+  }
+
+  function updateSiteName(name: string): void {
+    mutate((d) => {
+      d.settings.siteName = name.trim()
     })
   }
 
@@ -208,10 +245,14 @@ export const useNavStore = defineStore('nav', () => {
     hasLocalData,
     searchEngine,
     engines,
+    siteName,
+    saveStatus,
     loading,
     error,
     isEditing,
     load,
+    saveNow,
+    updateSiteName,
     addGroup,
     updateGroup,
     deleteGroup,

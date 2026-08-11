@@ -42,6 +42,7 @@ npm test           # 运行单元测试
 
 - **数据即文件**：直接编辑 JSON 或使用页面编辑模式，导出后回填仓库即可
 - **双源合并**：仓库数据为基线，浏览器 localStorage 保存本地修改（本地优先）
+- **全局保存**：Linux dev server 部署时（见下方部署章节），编辑改动会自动写回服务器 `public/data/links.json`（内置 `POST /api/data` 接口），全设备生效；纯静态托管（Vercel 等）无此接口，修改仅存浏览器本地
 - **个人数据不入库**：`links.json` 含个人服务地址，已被 `.gitignore` 排除；仓库内置 `links.example.json` 作为结构模板，部署前把真实数据放入 `public/data/links.json` 即可
 
 ## 🌐 部署（静态托管）

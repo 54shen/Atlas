@@ -334,6 +334,22 @@ a {
   color: var(--accent);
 }
 
+.save-status {
+  font-size: 12px;
+}
+
+.save-status.saving {
+  color: var(--text-secondary);
+}
+
+.save-status.saved {
+  color: #2ea043;
+}
+
+.save-status.error {
+  color: #e5534b;
+}
+
 /* ---------- 添加分组 ---------- */
 
 .add-group-zone {

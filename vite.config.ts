@@ -1,6 +1,8 @@
 /// <reference types="vitest/config" />
 import { fileURLToPath, URL } from 'node:url'
-import { defineConfig } from 'vite'
+import { resolve } from 'node:path'
+import { mkdirSync, writeFileSync } from 'node:fs'
+import { defineConfig, type Plugin } from 'vite'
 import vue from '@vitejs/plugin-vue'
 
 /** 自定义域名访问白名单（Vite 默认拦截未知域名，报 Blocked request）：
@@ -10,8 +12,44 @@ const allowedHosts = (process.env.ALLOWED_HOSTS ?? '')
   .map((h) => h.trim())
   .filter(Boolean)
 
+/** 全局保存接口：POST /api/data 把导航数据写回 public/data/links.json（仅 dev server 生效） */
+const dataWriteApi: Plugin = {
+  name: 'atlas-data-write-api',
+  configureServer(server) {
+    server.middlewares.use('/api/data', (req, res) => {
+      if (req.method !== 'POST') {
+        res.writeHead(405, { 'Content-Type': 'application/json' })
+        res.end(JSON.stringify({ ok: false, error: 'Method Not Allowed' }))
+        return
+      }
+      let body = ''
+      req.on('data', (chunk) => {
+        body += chunk
+      })
+      req.on('end', () => {
+        try {
+          const parsed: unknown = JSON.parse(body)
+          if (!parsed || typeof parsed !== 'object' || !Array.isArray((parsed as { groups?: unknown }).groups)) {
+            throw new Error('数据格式不正确')
+          }
+          const dir = resolve(process.cwd(), 'public/data')
+          mkdirSync(dir, { recursive: true })
+          writeFileSync(resolve(dir, 'links.json'), JSON.stringify(parsed, null, 2), 'utf-8')
+          res.writeHead(200, { 'Content-Type': 'application/json' })
+          res.end(JSON.stringify({ ok: true }))
+        } catch (e) {
+          res.writeHead(400, { 'Content-Type': 'application/json' })
+          res.end(
+            JSON.stringify({ ok: false, error: e instanceof Error ? e.message : String(e) }),
+          )
+        }
+      })
+    })
+  },
+}
+
 export default defineConfig({
-  plugins: [vue()],
+  plugins: [vue(), dataWriteApi],
   resolve: {
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url)),

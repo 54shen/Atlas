@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { defineAsyncComponent, onMounted, onUnmounted } from 'vue'
+import { defineAsyncComponent, onMounted, onUnmounted, watch } from 'vue'
 import TopBar from '@/components/TopBar.vue'
 import NavGroup from '@/components/NavGroup.vue'
 import EditModal from '@/components/EditModal.vue'
@@ -21,6 +21,15 @@ function onGroupDragEnd() {
   setDragActive(false)
   nav.persistFromDrag()
 }
+
+/** 站点名变化时同步浏览器标签页标题 */
+watch(
+  () => nav.siteName,
+  (name) => {
+    document.title = `${name} · 我的导航`
+  },
+  { immediate: true },
+)
 
 /** 全局快捷键：非输入场景下按 / 聚焦搜索框 */
 function onKeydown(e: KeyboardEvent) {
@@ -51,7 +60,10 @@ onUnmounted(() => {
   <div class="page">
     <TopBar />
     <div v-if="nav.isEditing" class="edit-banner">
-      ✏️ 编辑模式：改动仅保存在本浏览器，在「设置」中导出 JSON 后回填仓库即可全站生效
+      ✏️ 编辑模式：改动会自动保存到服务器（全设备生效）
+      <span v-if="nav.saveStatus !== 'idle'" class="save-status" :class="nav.saveStatus">
+        {{ nav.saveStatus === 'saving' ? '保存中…' : nav.saveStatus === 'saved' ? '✅ 已保存' : '⚠️ 保存失败（纯静态托管无保存接口）' }}
+      </span>
       <button class="banner-btn primary" @click="openEdit({ mode: 'group', groupId: null, linkId: null })">
         ➕ 新增分组
       </button>

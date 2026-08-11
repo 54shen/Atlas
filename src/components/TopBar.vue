@@ -6,6 +6,10 @@ import { showSettings } from '@/composables/ui'
 
 const nav = useNavStore()
 
+function openSettings() {
+  showSettings.value = true
+}
+
 function toggleEdit() {
   nav.isEditing = !nav.isEditing
 }
@@ -15,7 +19,7 @@ function toggleEdit() {
   <header class="topbar">
     <a class="logo" href="/" title="回到首页">
       <span class="logo-icon">🧭</span>
-      <span class="logo-text">Atlas</span>
+      <span class="logo-text">{{ nav.siteName }}</span>
     </a>
     <SearchBar class="topbar-search" />
     <div class="topbar-actions">
@@ -30,9 +34,9 @@ function toggleEdit() {
       </button>
       <button
         class="icon-btn"
-        title="设置（导入导出 / 搜索引擎）"
+        title="设置（站点名 / 导入导出 / 搜索引擎）"
         aria-label="设置"
-        @click="showSettings = true"
+        @click="openSettings"
       >
         ⚙️
       </button>
@@ -56,6 +60,14 @@ function toggleEdit() {
   border-bottom: 1px solid var(--border);
 }
 
+/* 搜索框页面水平居中（absolute 相对 .topbar） */
+.topbar-search {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(560px, calc(100vw - 220px));
+}
+
 .logo {
   display: flex;
   align-items: center;
@@ -67,11 +79,6 @@ function toggleEdit() {
 
 .logo-icon {
   font-size: 22px;
-}
-
-.topbar-search {
-  flex: 1;
-  max-width: 560px;
 }
 
 .topbar-actions {

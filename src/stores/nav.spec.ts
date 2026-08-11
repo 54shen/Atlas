@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { createPinia, setActivePinia } from 'pinia'
 import { NAV_DATA_KEY, useNavStore } from './nav'
 import { loadLocalData } from '@/utils/storage'
@@ -142,6 +142,50 @@ describe('新增与删除', () => {
   })
 })
 
+describe('站点名与全局保存', () => {
+  it('未设置站点名时默认 Atlas；updateSiteName 修改并持久化', () => {
+    const store = setup()
+    expect(store.siteName).toBe('Atlas')
+    store.updateSiteName('我的导航站')
+    expect(store.siteName).toBe('我的导航站')
+    expect(loadLocalData<NavData>(NAV_DATA_KEY)!.settings.siteName).toBe('我的导航站')
+  })
+
+  it('修改后防抖自动调用保存接口并置 saved 状态', async () => {
+    vi.useFakeTimers()
+    const fetchMock = vi.fn().mockResolvedValue({ ok: true, json: async () => ({ ok: true }) })
+    vi.stubGlobal('fetch', fetchMock)
+    const store = setup()
+    store.addGroup('临时')
+    await vi.advanceTimersByTimeAsync(900)
+    expect(fetchMock).toHaveBeenCalledTimes(1)
+    const [url, init] = fetchMock.mock.calls[0]
+    expect(url).toBe('/api/data')
+    expect(JSON.parse(init.body as string).groups.at(-1).name).toBe('临时')
+    expect(store.saveStatus).toBe('saved')
+  })
+
+  it('保存失败时 saveStatus 为 error', async () => {
+    vi.useFakeTimers()
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ ok: false }))
+    const store = setup()
+    store.addGroup('临时')
+    await vi.advanceTimersByTimeAsync(900)
+    expect(store.saveStatus).toBe('error')
+  })
+
+  it('手动 saveNow 立即保存', async () => {
+    vi.useFakeTimers()
+    const fetchMock = vi.fn().mockResolvedValue({ ok: true, json: async () => ({ ok: true }) })
+    vi.stubGlobal('fetch', fetchMock)
+    const store = setup()
+    store.addGroup('临时')
+    await store.saveNow()
+    expect(fetchMock).toHaveBeenCalledTimes(1)
+    expect(store.saveStatus).toBe('saved')
+  })
+})
+
 describe('搜索引擎与数据管理', () => {
   it('切换/添加/删除引擎，删除当前引擎自动回退', () => {
     const store = setup()
@@ -172,4 +216,9 @@ describe('搜索引擎与数据管理', () => {
     expect(localStorage.getItem(NAV_DATA_KEY)).toBeNull()
     expect(store.data!.groups.map((g) => g.id)).toEqual(['g1', 'g2'])
   })
+})
+
+afterEach(() => {
+  vi.useRealTimers()
+  vi.unstubAllGlobals()
 })
