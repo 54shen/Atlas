@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { parseBookmarkHtml, parseJsonData, serializeJson } from './exportImport'
+import { exportFilename, parseBookmarkHtml, parseJsonData, serializeJson } from './exportImport'
 import { DATA_VERSION } from './merge'
 import type { NavData } from '@/types'
 
@@ -87,5 +87,17 @@ describe('serializeJson / parseJsonData', () => {
     const data = makeData()
     data.version = DATA_VERSION + 1
     expect(parseJsonData(JSON.stringify(data))).toBeNull()
+  })
+})
+
+describe('exportFilename', () => {
+  it('文件名包含日期与时间，秒级防重复', () => {
+    const name = exportFilename(new Date(2026, 7, 11, 18, 30, 5))
+    expect(name).toBe('nav-links-2026-08-11-18-30-05.json')
+  })
+
+  it('时分秒补零', () => {
+    const name = exportFilename(new Date(2026, 0, 2, 3, 4, 6))
+    expect(name).toBe('nav-links-2026-01-02-03-04-06.json')
   })
 })

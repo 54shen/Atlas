@@ -19,6 +19,12 @@ export function parseJsonData(text: string): NavData | null {
   }
 }
 
+/** 生成带时间戳的导出文件名（如 nav-links-2026-08-11-18-30-05.json），防重复、便于检索 */
+export function exportFilename(now = new Date()): string {
+  const pad = (n: number) => String(n).padStart(2, '0')
+  return `nav-links-${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}-${pad(now.getHours())}-${pad(now.getMinutes())}-${pad(now.getSeconds())}.json`
+}
+
 /** 触发浏览器下载文本文件 */
 export function downloadTextFile(filename: string, content: string): void {
   const blob = new Blob([content], { type: 'application/json;charset=utf-8' })

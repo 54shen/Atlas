@@ -3,7 +3,13 @@ import { ref } from 'vue'
 import type { SearchEngine } from '@/types'
 import { useNavStore } from '@/stores/nav'
 import { showSettings } from '@/composables/ui'
-import { downloadTextFile, parseBookmarkHtml, parseJsonData, serializeJson } from '@/utils/exportImport'
+import {
+  downloadTextFile,
+  exportFilename,
+  parseBookmarkHtml,
+  parseJsonData,
+  serializeJson,
+} from '@/utils/exportImport'
 
 const nav = useNavStore()
 const newEngineName = ref('')
@@ -17,7 +23,7 @@ function onSiteNameChange(e: Event) {
 
 function onExport() {
   if (!nav.data) return
-  downloadTextFile('nav-links.json', serializeJson(nav.data))
+  downloadTextFile(exportFilename(), serializeJson(nav.data))
 }
 
 function onImportJson(e: Event) {
