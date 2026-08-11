@@ -1,0 +1,11 @@
+node_modules
+dist
+coverage
+*.local
+.DS_Store
+
+# Claude 本地技能配置，不随项目提交
+.claude/
+
+# 个人导航数据（含自建服务地址），不随项目提交
+public/data/links.json

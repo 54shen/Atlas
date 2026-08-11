@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "updatedAt": "2026-08-11",
+  "settings": {
+    "searchEngine": "google",
+    "searchEngines": [
+      { "id": "bing", "name": "Bing", "url": "https://www.bing.com/search?q={q}" },
+      { "id": "google", "name": "Google", "url": "https://www.google.com/search?q={q}" },
+      { "id": "baidu", "name": "百度", "url": "https://www.baidu.com/s?wd={q}" }
+    ]
+  },
+  "groups": [
+    {
+      "id": "g-example",
+      "name": "示例分组",
+      "icon": "🧰",
+      "order": 1,
+      "links": [
+        { "id": "l-example-1", "name": "示例站点", "url": "https://example.com", "desc": "这是示例数据，实际使用请复制本文件为 links.json 并填入真实站点", "order": 1 },
+        { "id": "l-example-2", "name": "示例站点二", "url": "https://example.org", "desc": "个人数据（links.json）已通过 .gitignore 排除，不会随仓库公开", "order": 2 }
+      ]
+    }
+  ]
+}
